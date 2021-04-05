@@ -2,10 +2,8 @@ const resolvers = require('./graphql/resolvers/index.js');
 const typeDefs = require('./graphql/typeDef');
 const session = require('express-session');
 const MySqlStore = require('express-mysql-session')(session);
-
 const SESSION_SECRET = "secret";
 const {ApolloServer} =  require("apollo-server-express");
-
 const options = {
       host: 'localhost',
       port: 3306,
@@ -27,6 +25,11 @@ const express = require('express');
 const app = express();
 
 
+const corsOption = {
+credentials:true,
+"origin":"http://localhost:3000",
+optionsSuccessStatus:200,
+};
 
 app.use('/graphql', session({
   resave:true,
@@ -34,8 +37,7 @@ app.use('/graphql', session({
   secret : SESSION_SECRET,
   saveUninitialized:false,
   cookie : {
-    httpOnly : true,
-    maxAge   : 7*24*60*60*1000
+    maxAge   : 7*24*60*60*1000,
   },
   store : new MySqlStore(options)
 }));
@@ -43,11 +45,12 @@ app.use('/graphql', session({
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req })=>({req}),
+  context: ({ req})=>({req}),
 });
 
 
-server.applyMiddleware({app , path:'/graphql' })
+
+server.applyMiddleware({app , path:'/graphql' , cors:corsOption })
 
 
 

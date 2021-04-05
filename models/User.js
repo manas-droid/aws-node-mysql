@@ -24,5 +24,4 @@ module.exports = class User{
         return db.execute(query , [user_email]);
 
       }
-
 }
