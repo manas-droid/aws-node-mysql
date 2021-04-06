@@ -20,6 +20,7 @@ type Post{
   description:String!
   bookname:String!
   username:String!
+  likeCount:Int!
 }
 type SinglePost{
   id :Int!
@@ -45,6 +46,7 @@ type Query{
   getBookMarks(postId:Int!):Boolean!
   getSinglePost(postId:Int!):SinglePost!
   getComments(postId:Int!):[Comment]!
+  getYourBookMarks:[Post]! 
 }
 
 
@@ -56,5 +58,6 @@ type Mutation{
   addBookMark(postId:Int!):Boolean!
   addLikes(postId:Int!):Boolean!
   addPostComment(postId:Int! parentId:Int comment:String!): Boolean!
+  logOut:Boolean!
 }
 `;

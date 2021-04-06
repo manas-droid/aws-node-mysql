@@ -18,7 +18,7 @@ module.exports = class Books{
       getPosts(){
         const query = `
         SELECT  postID as id,post_summary as description,
-        post_bookname as bookname ,post_image as imageUrl , username
+        post_bookname as bookname ,post_image as imageUrl , username , post_likeCount as likeCount
         FROM Posts as p , Users as u
         WHERE p.post_authorID = u.userId;
         `;
@@ -87,6 +87,17 @@ module.exports = class Books{
         WHERE p.post_authorID = u.userId and postID = ?;
         `;
         return db.query(query , [postId]);
+      }
+
+      getYourBookMarks(userId){
+          const query = `
+          SELECT  p.postID as id, p.post_bookname as bookname,p.post_likeCount as likeCount, 
+          p.post_image as imageUrl,p.post_summary as description 
+          FROM posts as p , bookmark as b 
+          WHERE p.postID = b.postId and b.userId=?;
+          `;
+          
+          return db.query(query , [userId]);
       }
 
 }

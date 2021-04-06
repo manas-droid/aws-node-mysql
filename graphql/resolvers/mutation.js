@@ -35,7 +35,6 @@ Mutation : {
               throw new Error("password's incorrect");
             }
             req.session.userId = resultUser.userId;
-            console.log(req.session);
           } catch (e) {
             throw new Error(e);
           }
@@ -68,7 +67,7 @@ Mutation : {
           const authorId = req.session.userId;
               if(authorId){
                 try {
-                  const book = new Post(authorId , imageUrl , description , bookname) ;
+                  const book = new Post(authorId , imageUrl , description , bookname);
                   const result = await book.createPost();
                   return true;
                 } catch (e) {
@@ -107,11 +106,9 @@ Mutation : {
                 const [check , __] = await book.getLikes(userId , postId);
                 if(check.length === 1){
                   const result = await book.deleteLikes(userId , postId);
-                  console.log("DELETE LIKE : " , result);
                   return true;
                 }
                 const result = await book.addLikes(userId , postId);
-                console.log("ADD LIKE : " ,result);
                 return true;
             } catch (e) {
               throw new Error(e);
@@ -126,8 +123,7 @@ Mutation : {
         if (userId) {
             try {
                 const resultComment = new Comment(postId,userId,parentId,comment);
-                 const result = await resultComment.createComment();
-                 console.log(result);
+                 await resultComment.createComment();
                  return true;
             } catch (e) {
               throw new Error(e);
@@ -135,6 +131,19 @@ Mutation : {
         }
         else
             throw new Error("User not authorised");
+      },
+
+      logOut : async (_ , __ , {req})=>{
+          const userId = req.session.userId;
+          if(userId){
+            req.session.destroy((err)=>{
+                if(err)
+                  throw new Error(err)
+            });
+            return true;
+          }
+         else 
+            return false;
       }
 
 }

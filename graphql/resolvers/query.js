@@ -7,7 +7,6 @@ Query : {
       helloWorld : (_ , __ , context)=>{
         return "Hello World";
       },
-
       authMe : (_ , __ , {req})=>{
           return req.session.userId;
       },
@@ -51,7 +50,6 @@ Query : {
           try {
               const book = new Post();
               const [result] = await book.getSinglePost(postId);
-              console.log(result);
               return result[0];
           } catch (e) {
               throw new Error(e);
@@ -61,11 +59,24 @@ Query : {
           try {
             const comment = new Comment(postId);
             const[ result , __] = await comment.getComments();
-            console.log(result);
             return result;
           } catch (e) {
             throw new Error(e);
           }
+      },
+      getYourBookMarks : async (_ , __ , {req})=>{
+          try {
+            const userId = req.session.userId;
+              if(userId){
+                  const book = new Post();
+                  const [result] = await book.getYourBookMarks(userId);
+                  return result;
+              }else{
+              throw new Error("User not authorised");
+              }
+          } catch (error) {
+            throw new Error(error);
+          }
       }
 }
-}
+};
