@@ -77,6 +77,23 @@ Query : {
           } catch (error) {
             throw new Error(error);
           }
+      },
+
+      getYourPosts : async (_ , __ , {req})=>{
+            const userId = req.session.userId;
+            if (userId) {
+              try {
+                const book = new Post();
+                const [result] = await book.getYourPosts(userId);
+                return result;
+              } catch (error) {
+                throw new Error(error);
+              }
+            } 
+            else {
+              throw new Error("User not authorised to get YOur Post");
+            }
+          
       }
 }
 };

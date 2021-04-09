@@ -4,6 +4,8 @@ const session = require('express-session');
 const MySqlStore = require('express-mysql-session')(session);
 const SESSION_SECRET = "secret";
 const {ApolloServer} =  require("apollo-server-express");
+
+
 const options = {
       host: 'localhost',
       port: 3306,

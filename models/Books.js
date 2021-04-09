@@ -24,7 +24,7 @@ module.exports = class Books{
         `;
         return db.execute(query);
       }
-
+      // bookmark
       getBookMark(userId , postId){
           const query = `
           SELECT postId FROM BookMark WHERE postId = ? and userId = ?
@@ -45,6 +45,20 @@ module.exports = class Books{
           `;
           return db.execute(query , [userId , postId]);
       }
+
+      getYourBookMarks(userId){
+        const query = `
+        SELECT  p.postID as id, p.post_bookname as bookname,p.post_likeCount as likeCount, 
+        p.post_image as imageUrl,p.post_summary as description 
+        FROM posts as p , bookmark as b 
+        WHERE p.postID = b.postId and b.userId=?;
+        `;
+        
+        return db.query(query , [userId]);
+    }
+
+
+      // likes 
 
       getLikes(userId , postId){
           const query = `
@@ -89,15 +103,22 @@ module.exports = class Books{
         return db.query(query , [postId]);
       }
 
-      getYourBookMarks(userId){
-          const query = `
+      
+      getYourPosts(userId){
+        const query = `
           SELECT  p.postID as id, p.post_bookname as bookname,p.post_likeCount as likeCount, 
           p.post_image as imageUrl,p.post_summary as description 
-          FROM posts as p , bookmark as b 
-          WHERE p.postID = b.postId and b.userId=?;
+          FROM  Posts as p 
+          WHERE p.post_authorID=?;
           `;
           
-          return db.query(query , [userId]);
+        return db.query(query , [userId]);
       }
 
+      deleteYourPost(postId){
+        const query = `
+          DELETE FROM POSTS WHERE post_authorId = ? and postId = ?
+        `;
+        return db.query(query , [this.authorId , postId]);
+      }
 }

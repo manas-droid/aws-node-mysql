@@ -14,6 +14,7 @@ input inputPost{
   description:String!
   bookname:String!
 }
+
 type Post{
   id :Int!
   imageUrl : String
@@ -22,6 +23,7 @@ type Post{
   username:String!
   likeCount:Int!
 }
+
 type SinglePost{
   id :Int!
   imageUrl : String
@@ -47,6 +49,7 @@ type Query{
   getSinglePost(postId:Int!):SinglePost!
   getComments(postId:Int!):[Comment]!
   getYourBookMarks:[Post]! 
+  getYourPosts : [Post]!
 }
 
 
@@ -59,5 +62,6 @@ type Mutation{
   addLikes(postId:Int!):Boolean!
   addPostComment(postId:Int! parentId:Int comment:String!): Boolean!
   logOut:Boolean!
+  deleteYourPosts(postId:Int!):Boolean!
 }
 `;

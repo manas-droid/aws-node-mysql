@@ -42,6 +42,7 @@ Mutation : {
       },
 
       s3Signature: async (_ ,{filename , filetype} , {req})=>{
+
             const s3 = new aws.S3({
               accessKeyId: process.env.AWS_BUCKET_ACCESS_KEY,
               secretAccessKey: process.env.AWS_BUCKET_SECRET,
@@ -62,6 +63,7 @@ Mutation : {
             signedRequest ,
             url
             }
+
         },
         createPost : async (_ , {input:{imageUrl , description , bookname}} , {req})=>{
           const authorId = req.session.userId;
@@ -132,7 +134,21 @@ Mutation : {
         else
             throw new Error("User not authorised");
       },
-
+      deleteYourPosts : async (_ , {postId} , {req})=>{
+        const userId = req.session.userId;
+        if(userId){
+            try {
+              const book = new Post(userId);
+              const result = await book.deleteYourPost(postId);
+              console.log(result);
+            } catch (error) {
+              throw new Error(error);
+            }
+            return true;
+        }
+        else
+          throw new Error("User not authorised");  
+      },
       logOut : async (_ , __ , {req})=>{
           const userId = req.session.userId;
           if(userId){
@@ -145,7 +161,6 @@ Mutation : {
          else 
             return false;
       }
-
 }
 }
 
