@@ -1,10 +1,12 @@
+const BookMarks = require("../../models/BookMarks.js");
 const Post = require("../../models/Books.js");
 const Comment = require("../../models/Comments.js");
+const Likes = require("../../models/Likes.js");
 
 
 module.exports = {
 Query : {
-      helloWorld : (_ , __ , context)=>{
+      helloWorld : (_ , __ )=>{
         return "Hello World";
       },
       authMe : (_ , __ , {req})=>{
@@ -23,8 +25,8 @@ Query : {
         const userId = req.session.userId;
         if(userId){
           try {
-            const book = new Post();
-            const[check , __] = await book.getBookMark(userId , postId);
+            const book = new BookMarks(userId , postId);
+            const[check , __] = await book.getBookMark();
             return check.length>0;
           } catch (e) {
             throw new Error(e);
@@ -36,8 +38,8 @@ Query : {
         const userId = req.session.userId;
         if(userId){
             try {
-              const book = new Post();
-              const [check , __] = await book.getLikes(userId , postId);
+              const book = new Likes(userId , postId);
+              const [check , __] = await book.getLikes();
               return check.length > 0;
             } catch (e) {
                 throw new Error(e);
@@ -68,8 +70,8 @@ Query : {
           try {
             const userId = req.session.userId;
               if(userId){
-                  const book = new Post();
-                  const [result] = await book.getYourBookMarks(userId);
+                  const book = new BookMarks(userId);
+                  const [result] = await book.getYourBookMarks();
                   return result;
               }else{
               throw new Error("User not authorised");

@@ -12,7 +12,7 @@ module.exports = class Books{
           const query = `
               INSERT INTO Posts (post_summary , post_bookname , post_image , post_authorID) VALUES (?,?,?,?)
           `
-          return db.execute(query , [this.description , this.bookname , this.imageUrl , this.authorId]);
+          return db.query(query , [this.description , this.bookname , this.imageUrl , this.authorId]);
       }
 
       getPosts(){
@@ -22,76 +22,11 @@ module.exports = class Books{
         FROM Posts as p , Users as u
         WHERE p.post_authorID = u.userId;
         `;
-        return db.execute(query);
-      }
-      // bookmark
-      getBookMark(userId , postId){
-          const query = `
-          SELECT postId FROM BookMark WHERE postId = ? and userId = ?
-          `;
-          return db.execute(query , [postId , userId]);
+        return db.query(query);
       }
 
-      addBookMark(userId , postId){
-          const query = `
-          INSERT INTO BookMark(userId , postId) VALUES (? , ?)
-          `
-          return db.execute(query , [userId , postId]);
-      }
 
-      deleteBookMark(userId,postId){
-          const query = `
-            DELETE FROM BookMark WHERE userId = ? and postId=?
-          `;
-          return db.execute(query , [userId , postId]);
-      }
-
-      getYourBookMarks(userId){
-        const query = `
-        SELECT  p.postID as id, p.post_bookname as bookname,p.post_likeCount as likeCount, 
-        p.post_image as imageUrl,p.post_summary as description 
-        FROM posts as p , bookmark as b 
-        WHERE p.postID = b.postId and b.userId=?;
-        `;
-        
-        return db.query(query , [userId]);
-    }
-
-
-      // likes 
-
-      getLikes(userId , postId){
-          const query = `
-            SELECT postId FROM Likes WHERE postId=? and userId=?
-          `;
-          return db.execute(query , [postId , userId]);
-      }
-
-      async addLikes(userId , postId){
-        try {
-            await db.query('START TRANSACTION;');
-            await db.query('INSERT INTO LIKES(userId , postId) VALUES (? , ?);' , [userId , postId]);
-            await db.query('UPDATE Posts SET post_likeCount = post_likeCount+1 WHERE postID = ?;' , [postId]);
-            return db.query('COMMIT;');
-        } catch (e) {
-          console.log(e);
-          return db.query('ROLLBACK;');
-        }
-      }
-
-      async deleteLikes(userId , postId){
-        try {
-            await db.query('START TRANSACTION;');
-            await db.query('DELETE FROM LIKES WHERE postId=? and userId=?;' , [postId , userId]);
-            await db.query('UPDATE Posts SET post_likeCount = post_likeCount-1 WHERE postID = ?;' , [postId]);
-            return db.query('COMMIT;');
-        } catch (e) {
-            console.log(e);
-            return db.query('ROLLBACK;');
-        }
-
-      }
-
+     
       getSinglePost(postId){
         const query = `
         SELECT  postID as id,post_summary as description,
@@ -115,9 +50,9 @@ module.exports = class Books{
         return db.query(query , [userId]);
       }
 
-      deleteYourPost(postId){
+      deleteYourPosts(postId){
         const query = `
-          DELETE FROM POSTS WHERE post_authorId = ? and postId = ?
+          DELETE FROM Posts WHERE post_authorID = ? and postID = ?;
         `;
         return db.query(query , [this.authorId , postId]);
       }

@@ -15,6 +15,7 @@ input inputPost{
   bookname:String!
 }
 
+
 type Post{
   id :Int!
   imageUrl : String
@@ -63,5 +64,6 @@ type Mutation{
   addPostComment(postId:Int! parentId:Int comment:String!): Boolean!
   logOut:Boolean!
   deleteYourPosts(postId:Int!):Boolean!
+  deleteComment(commentId:Int! postId:Int!):Boolean!
 }
 `;

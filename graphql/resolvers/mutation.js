@@ -5,6 +5,8 @@ const Comment = require("../../models/Comments.js");
 
 
 const aws = require("aws-sdk");
+const Likes = require('../../models/Likes.js');
+const BookMarks = require('../../models/BookMarks.js');
 require("dotenv").config();
 
 module.exports = {
@@ -22,9 +24,9 @@ Mutation : {
         return true;
       } ,
       login : async(_ , {email , password} , {req})=>{
-          const user  = new User();
+          const user  = new User(email);
           try {
-            const findUser = await user.login(email);
+            const findUser = await user.login();
             const resultUser = findUser[0][0];
             if(!resultUser){
               throw new Error("user not found");
@@ -84,7 +86,7 @@ Mutation : {
           const userId = req.session.userId;
           if(userId){
             try {
-              const book = new Post();
+              const book = new BookMarks(userId , postId);
               const[check , ___ ] = await book.getBookMark(userId , postId);
               if(check.length === 1){
                     await book.deleteBookMark(userId , postId);
@@ -104,13 +106,13 @@ Mutation : {
         const userId = req.session.userId;
         if(userId){
             try {
-                const book = new Post();
-                const [check , __] = await book.getLikes(userId , postId);
+                const book = new Likes(userId , postId);
+                const [check , __] = await book.getLikes();
                 if(check.length === 1){
-                  const result = await book.deleteLikes(userId , postId);
+                 await book.deleteLikes();
                   return true;
                 }
-                const result = await book.addLikes(userId , postId);
+                await book.addLikes();
                 return true;
             } catch (e) {
               throw new Error(e);
@@ -139,7 +141,7 @@ Mutation : {
         if(userId){
             try {
               const book = new Post(userId);
-              const result = await book.deleteYourPost(postId);
+              const result = await book.deleteYourPosts(postId);
               console.log(result);
             } catch (error) {
               throw new Error(error);
@@ -148,6 +150,18 @@ Mutation : {
         }
         else
           throw new Error("User not authorised");  
+      }
+      ,
+      deleteComment : async (_ , {postId , commentId} , {req})=>{
+        const userId = req.session.userId;
+        if(!userId) throw new Error("User not authorised");
+        try {
+          const comment = new Comment(postId , userId);
+          await comment.deleteComment(commentId);
+          return true;
+        } catch (error) {
+          throw new Error(error);
+        }
       },
       logOut : async (_ , __ , {req})=>{
           const userId = req.session.userId;

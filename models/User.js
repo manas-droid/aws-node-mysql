@@ -14,14 +14,16 @@ module.exports = class User{
             INSERT INTO Users (username , user_email , user_password) VALUES ( ? , ? , ?)
           `;
 
-          return db.execute(query , [this.username , this.email , this.password]);
+          return db.query(query , [this.username , this.email , this.password]);
       }
 
-     login(user_email){
+     login(){
         const query = `
           SELECT userId , user_password FROM Users WHERE user_email = (?)
         `;
-        return db.execute(query , [user_email]);
+        return db.query(query , [this.email]);
 
       }
+
+      
 }

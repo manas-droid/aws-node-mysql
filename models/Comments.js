@@ -1,25 +1,42 @@
 const db = require("../utils/database");
 
-
 module.exports = class Comment{
 
-      constructor(postId=null,userId=null,parentId=null,body=null){
+      constructor(postId=undefined,userId=undefined,parentId=undefined,body=undefined){
           this.postId = postId;
           this.userId = userId;
           this.parentId = parentId;
           this.body = body;
       }
-
+      
       async createComment(){
-          try {
-              await db.query("START TRANSACTION;");
-              await db.query("INSERT INTO Comments (postId, userId , text_comment , parentId) VALUES (? , ? , ? , ?);", [this.postId , this.userId , this.body , this.parentId]);
-              await db.query('UPDATE Posts SET post_commentCount = post_commentCount+1 WHERE postID = ?' , [this.postId]);
-              return db.query("COMMIT;");
+        const sql = await db.getConnection();
+        try {
+              await sql.beginTransaction();
+              await sql.query("INSERT INTO Comments (postId, userId , text_comment , parentId) VALUES (? , ? , ? , ?);", [this.postId , this.userId , this.body , this.parentId]);
+              await sql.query('UPDATE Posts SET post_commentCount = post_commentCount+1 WHERE postID = ?' , [this.postId]);
+              await sql.commit();
+              return sql.release();
           } catch (e) {
-            console.log("ROLLBACK: ", e);
-            return db.query("ROLLBACK;");
+            console.log("CREATE COMMENT ROLLBACK: ", e);
+            await  sql.rollback();
+            return sql.release();
           }
+      }
+
+      async deleteComment(commentId){
+        const sql = await db.getConnection();
+        try {
+          await sql.beginTransaction();
+          await sql.query("DELETE FROM Comments WHERE userId=? and commentId=?" , [this.userId,commentId]);
+          await sql.query('UPDATE Posts SET post_commentCount = post_commentCount-1 WHERE postID = ?' , [this.postId]);
+          await sql.commit();
+          return sql.release();
+        } catch (error) {
+          console.log("DELETE COMMENT ROLLBACK: ", e);
+          await sql.rollback();
+          return sql.release();          
+        }
       }
 
       getComments(){
