@@ -4,14 +4,14 @@ const session = require('express-session');
 const MySqlStore = require('express-mysql-session')(session);
 const SESSION_SECRET = "secret";
 const {ApolloServer} =  require("apollo-server-express");
-
+require("dotenv").config();
 
 const options = {
-      host: 'localhost',
+      host: process.env.AWS_RDS_HOST_NAME,
       port: 3306,
-      password: 'manas@904',
-      database: 'book_blog',
-      user : 'root',
+      password : process.env.AWS_RDS_PASSWORD,
+      database: process.env.AWS_RDS_DATABASE_NAME,
+      user : process.env.AWS_RDS_USER,
       schema: {
        tableName: 'sessions',
        columnNames: {
@@ -21,7 +21,7 @@ const options = {
        }
    }
   };
-
+  
 const express = require('express');
 
 const app = express();
@@ -54,8 +54,8 @@ const server = new ApolloServer({
 
 server.applyMiddleware({app , path:'/graphql' , cors:corsOption })
 
+const port = process.env.PORT || 8080;
 
-
-app.listen({ port: 4000 }, () =>
-console.log(`Server ready at http://localhost:4000${server.graphqlPath}`)
+app.listen({port}, () =>
+console.log(`Server ready at http://localhost:${port}`)
 );
