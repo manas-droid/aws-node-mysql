@@ -18,7 +18,7 @@ const options = {
            session_id: 'session_id',
            expires: 'expires',
            data: 'data'
-       }
+       } 
    }
   };
   
