@@ -9,7 +9,8 @@ const pool = mysql.createPool({
   password: process.env.AWS_RDS_PASSWORD,
   connectionLimit:10,
   ssl:{
-    ca: fs.readFileSync(__dirname + '/rds-combined-ca-bundle.pem')
-  }
+    ca: fs.readFileSync(__dirname + '/rds-combined-ca-bundle.pem') 
+   },
+   debug:true
 });
 module.exports = pool.promise();
