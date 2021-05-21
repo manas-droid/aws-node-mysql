@@ -23,15 +23,17 @@ const options = {
   };
   
 const express = require('express');
+const { verifyToken } = require('./verifyToken.js');
 
 const app = express();
 
 
 const corsOption = {
 credentials:true,
-"origin":"http://localhost:3000",
+"origin":["https://competent-dubinsky-5ca84b.netlify.app" , "http://localhost:3000"],
 optionsSuccessStatus:200,
 };
+
 
 app.use('/graphql', session({
   resave:true,
@@ -47,14 +49,45 @@ app.use('/graphql', session({
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req})=>({req}),
+  context: async ({ req })=>{
+    let isAuthenticated = false;
+    let user = "";
+    const authHeader= req.headers.authorization || "";
+    try {
+      if(authHeader){
+        const token = authHeader.split(" ")[1];
+        const payload = await verifyToken(token);
+        isAuthenticated = payload  ? true : false ;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    
+    return {
+      req ,
+      isAuthenticated,
+      user
+    }
+  },
 });
 
 
 
 server.applyMiddleware({app , path:'/graphql' , cors:corsOption })
 
-const port = process.env.PORT || 8080;
+const port = 8080;
+
+app.post('/userData' , (req,res,next)=>{
+  console.log(req.params);
+  next();
+});
+
+app.get('/userData' , (req,res,next)=>{
+  console.log(req.params);
+  res.send("user here")
+  next();
+});
+
 
 app.listen({port}, () =>
 console.log(`Server ready at http://localhost:${port}`)

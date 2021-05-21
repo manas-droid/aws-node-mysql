@@ -6,12 +6,6 @@ const Likes = require("../../models/Likes.js");
 
 module.exports = {
 Query : {
-      helloWorld : (_ , __ )=>{
-        return "Hello World";
-      },
-      authMe : (_ , __ , {req})=>{
-          return req.session.userId;
-      },
       getAllPosts : async (_ , __)=>{
         try {
             const book = new Post();

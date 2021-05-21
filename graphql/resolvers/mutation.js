@@ -9,78 +9,77 @@ const Likes = require('../../models/Likes.js');
 const BookMarks = require('../../models/BookMarks.js');
 require("dotenv").config();
 
+const BASE_URL = "https://dev-qjkask69.us.auth0.com/";
+
+function checkInputs(description, bookname){
+    const errors = [];
+    if(description.length <25){
+      // use atleast 25 characters
+      errors.push({path:'description' , message : 'The Description should be atleast 25 characters long'});
+    }
+    if(bookname.length === 0){
+      // bookname not mentioned
+      errors.push({path:'bookname' , message : 'bookname should be mentioned'});
+    }
+    if(errors.length >0){
+      return {
+        ok : false,
+        errors 
+      }
+    }
+}
+
 module.exports = {
 Mutation : {
-      register : async(_ , {email,username,password})=>{
-        let user;
-        try {
-          const hash = await argon.hash(password);
-           user = new User(email , username , hash);
-           await user.register();
-        } catch (e) {
-            throw new Error(e);
+      s3Signature: async (_ ,{filename , filetype} , {req})=>{
+        //authorise
+        const s3 = new aws.S3({
+          accessKeyId: process.env.AWS_BUCKET_ACCESS_KEY,
+          secretAccessKey: process.env.AWS_BUCKET_SECRET,
+          region : process.env.AWS_BUCKET_REGION
+        });
+        const s3Params = {
+                  Bucket: process.env.AWS_BUCKET_NAME,
+                  Key: filename,
+                  Expires: 60,
+                  ContentType: filetype,
+                  ACL: 'public-read',
+                };
+
+        const signedRequest = await s3.getSignedUrl('putObject', s3Params);
+        const url = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${filename}`;
+
+        return{
+        signedRequest ,
+        url
         }
 
-        return true;
-      } ,
-      login : async(_ , {email , password} , {req})=>{
-          const user  = new User(email);
-          try {
-            const findUser = await user.login();
-            const resultUser = findUser[0][0];
-            if(!resultUser){
-              throw new Error("user not found");
-            }
-
-            const check = await argon.verify(resultUser.user_password , password);
-            if(!check){
-              throw new Error("password's incorrect");
-            }
-            req.session.userId = resultUser.userId;
-          } catch (e) {
-            throw new Error(e);
-          }
-          return true;
-      },
-
-      s3Signature: async (_ ,{filename , filetype} , {req})=>{
-
-            const s3 = new aws.S3({
-              accessKeyId: process.env.AWS_BUCKET_ACCESS_KEY,
-              secretAccessKey: process.env.AWS_BUCKET_SECRET,
-              region : process.env.AWS_BUCKET_REGION
-            });
-            const s3Params = {
-                      Bucket: process.env.AWS_BUCKET_NAME,
-                      Key: filename,
-                      Expires: 60,
-                      ContentType: filetype,
-                      ACL: 'public-read',
-                    };
-
-            const signedRequest = await s3.getSignedUrl('putObject', s3Params);
-            const url = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${filename}`;
-
-            return{
-            signedRequest ,
-            url
-            }
-
         },
-        createPost : async (_ , {input:{imageUrl , description , bookname}} , {req})=>{
-          const authorId = req.session.userId;
-              if(authorId){
-                try {
-                  const book = new Post(authorId , imageUrl , description , bookname);
-                  const result = await book.createPost();
-                  return true;
-                } catch (e) {
-                    throw new Error(e);
-                }
-              }else{
-                throw new Error("User not authenticated");
-              }
-              return false;
+        createPost : async (_ , {input:{imageUrl , description , bookname}} , {req })=>{
+        const authorId = req.session.userId;
+        if(authorId){
+          checkInputs(description , bookname);
+          try {
+            const book = new Post(authorId , imageUrl , description , bookname);
+            await book.createPost();
+
+            return {
+              ok : true,
+            }
+          } catch (e) {
+
+              return {
+                ok : false,
+                errors : [{path : 'unknown' , message : 'Something went wrong'}]
+              };
+
+          }
+        }
+
+          return {
+            ok : false,
+            errors : [{path : 'user' , message : 'User is not authenticated'}]
+          };
         },
         addBookMark : async (_ , {postId} , {req})=>{
           const userId = req.session.userId;
@@ -90,17 +89,28 @@ Mutation : {
               const[check , ___ ] = await book.getBookMark(userId , postId);
               if(check.length === 1){
                     await book.deleteBookMark(userId , postId);
-                    return true;
+                    return {
+                      ok:true
+                    };
               }
               await book.addBookMark(userId , postId);
-              return true;
+              return {
+                ok : true,
+              };
 
             } catch (e) {
-              throw new Error(e);
+
+              return {
+                  ok:false,
+                  errors : [{path : 'name' , message: 'Something went wrong'}]
+              }
+
             }
           }
-          else
-              throw new Error("User not authorised");
+              return{
+                ok:  false,
+                errors : [{path:'user' , message: 'Username not Authorised'}]
+              }
       },
       addLikes : async (_ , {postId} , {req})=>{
         const userId = req.session.userId;
@@ -110,31 +120,54 @@ Mutation : {
                 const [check , __] = await book.getLikes();
                 if(check.length === 1){
                  await book.deleteLikes();
-                  return true;
+                  return {
+                    ok:true,
+                  };
                 }
                 await book.addLikes();
-                return true;
+                return {
+                  ok : true
+                };
             } catch (e) {
-              throw new Error(e);
+              return {
+                ok:false,
+                errors : [{path : 'name' , message: 'Something went wrong'}]
+            }
             }
         }
-        else
-          throw new Error("User not authorised");
-      },
 
+          return{
+            ok:  false,
+            errors : [{path:'user' , message: 'Username not Authorised'}]
+          }
+
+      },
       addPostComment : async (_ , {postId , parentId , comment} , {req})=>{
         const userId = req.session.userId;
         if (userId) {
+            if(comment.trim().length === 0){
+              return {
+                ok : false,
+                errors : [{path : 'comment' , message : 'Comment should not be empty'}]
+              }
+            }
             try {
                 const resultComment = new Comment(postId,userId,parentId,comment);
                  await resultComment.createComment();
-                 return true;
+                 return {
+                   ok:true,
+                 };
             } catch (e) {
-              throw new Error(e);
+              return {
+                ok:false,
+                errors : [{path : 'name' , message: 'Something went wrong'}]
+            }
             }
         }
-        else
-            throw new Error("User not authorised");
+          return{
+          ok:  false,
+          errors : [{path:'user' , message: 'Username not Authorised'}]
+        }
       },
       deleteYourPosts : async (_ , {postId} , {req})=>{
         const userId = req.session.userId;
@@ -144,36 +177,41 @@ Mutation : {
               const result = await book.deleteYourPosts(postId);
               console.log(result);
             } catch (error) {
-              throw new Error(error);
+               return {
+                  ok:false,
+                  errors : [{path : 'name' , message: 'Something went wrong'}]
+              }
             }
-            return true;
+            return {
+              ok:true,
+            };
         }
-        else
-          throw new Error("User not authorised");  
+        return{
+          ok:  false,
+          errors : [{path:'user' , message: 'Username not Authorised'}]
+        }
       }
       ,
       deleteComment : async (_ , {postId , commentId} , {req})=>{
         const userId = req.session.userId;
-        if(!userId) throw new Error("User not authorised");
+        if(!userId) {
+          return {
+            ok : false,
+            errors : [{path:'user' , message: 'Username not Authorised'}]  
+          };
+        }
         try {
           const comment = new Comment(postId , userId);
           await comment.deleteComment(commentId);
-          return true;
+          return {
+            ok:true
+          };
         } catch (error) {
-          throw new Error(error);
+          return {
+            ok:false,
+            errors : [{path : 'name' , message: 'Something went wrong'}]
         }
-      },
-      logOut : async (_ , __ , {req})=>{
-          const userId = req.session.userId;
-          if(userId){
-            req.session.destroy((err)=>{
-                if(err)
-                  throw new Error(err)
-            });
-            return true;
-          }
-         else 
-            return false;
+        }
       }
 }
 }

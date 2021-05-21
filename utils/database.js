@@ -10,7 +10,7 @@ const pool = mysql.createPool({
   connectionLimit:10,
   ssl:{
     ca: fs.readFileSync(__dirname + '/rds-combined-ca-bundle.pem').toString(),
-    rejectUnauthorized:false
    }
 });
+
 module.exports = pool.promise();

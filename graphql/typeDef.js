@@ -40,6 +40,16 @@ type Comment{
   username:String!
 }
 
+type Error{
+  path:String!
+  message:String
+}
+
+type Response{
+  ok:Boolean!
+  errors:[Error!]
+}
+
 type Query{
   helloWorld: String!
   authMe: Int
@@ -54,16 +64,14 @@ type Query{
 }
 
 
+
 type Mutation{
-  register(email:String! , username:String! , password:String!) : Boolean!
-  login(email:String! , password:String!): Boolean!
   s3Signature(filename:String! , filetype:String!):S3Payload!
-  createPost(input:inputPost): Boolean!
-  addBookMark(postId:Int!):Boolean!
-  addLikes(postId:Int!):Boolean!
-  addPostComment(postId:Int! parentId:Int comment:String!): Boolean!
-  logOut:Boolean!
-  deleteYourPosts(postId:Int!):Boolean!
-  deleteComment(commentId:Int! postId:Int!):Boolean!
+  createPost(input:inputPost):Response!
+  addBookMark(postId:Int!):Response!
+  addLikes(postId:Int!):Response!
+  addPostComment(postId:Int! parentId:Int comment:String!): Response!
+  deleteYourPosts(postId:Int!):Response!
+  deleteComment(commentId:Int! postId:Int!):Response!
 }
 `;
