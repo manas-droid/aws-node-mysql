@@ -78,7 +78,7 @@ server.applyMiddleware({app , path:'/graphql' , cors:corsOption })
 const port = process.env.PORT || 8080;
 
 app.post('/userData' , (req,res,next)=>{
-  console.log(req.params);
+  res.send(req.params);
   next();
 });
 
