@@ -75,7 +75,7 @@ const server = new ApolloServer({
 
 server.applyMiddleware({app , path:'/graphql' , cors:corsOption })
 
-const port = 8080;
+const port = 8080 || process.env.PORT;
 
 app.post('/userData' , (req,res,next)=>{
   console.log(req.params);
