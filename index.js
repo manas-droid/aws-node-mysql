@@ -9,12 +9,6 @@ const { verifyToken } = require('./verifyToken.js');
 
 const app = express();
 
-const corsOption = {
-credentials:true,
-"origin":["https://competent-dubinsky-5ca84b.netlify.app" , "http://localhost:3000"],
-optionsSuccessStatus:200,
-};
-
 
 const server = new ApolloServer({
   typeDefs,
@@ -40,7 +34,7 @@ const server = new ApolloServer({
 
 
 
-server.applyMiddleware({app , path:'/graphql' , cors:corsOption })
+server.applyMiddleware({app , path:'/graphql'});
 
 const port = process.env.PORT || 8080;
 
