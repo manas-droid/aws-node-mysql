@@ -5,6 +5,7 @@ const MySqlStore = require('express-mysql-session')(session);
 const SESSION_SECRET = "secret";
 const {ApolloServer} =  require("apollo-server-express");
 require("dotenv").config();
+let globalEmail = "";
 
 const options = {
       host: process.env.AWS_RDS_HOST_NAME,
@@ -78,8 +79,17 @@ server.applyMiddleware({app , path:'/graphql' , cors:corsOption })
 const port = process.env.PORT || 8080;
 
 app.post('/userData' , (req,res,next)=>{
-  console.log(req.query)
-  console.log("---------------------------------------request ends --------------------------------------------------------")
+ 
+  const user = req.query.user;
+  const logCount = req.query.logCount;
+
+  if(globalEmail !== user.email && logCount === 1){
+    console.table(user);
+    globalEmail = user.email;
+  }else{
+    globalEmail = "";
+  }
+
   res.send(req.query.logCount);
   next();
 });
