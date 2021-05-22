@@ -1,33 +1,13 @@
 const resolvers = require('./graphql/resolvers/index.js');
 const typeDefs = require('./graphql/typeDef');
-const session = require('express-session');
-const MySqlStore = require('express-mysql-session')(session);
-const SESSION_SECRET = "secret";
 const {ApolloServer} =  require("apollo-server-express");
 require("dotenv").config();
-let count = 1;
 
-const options = {
-      host: process.env.AWS_RDS_HOST_NAME,
-      port: 3306,
-      password : process.env.AWS_RDS_PASSWORD,
-      database: process.env.AWS_RDS_DATABASE_NAME,
-      user : process.env.AWS_RDS_USER,
-      schema: {
-       tableName: 'sessions',
-       columnNames: {
-           session_id: 'session_id',
-           expires: 'expires',
-           data: 'data'
-       } 
-   }
-  };
   
 const express = require('express');
 const { verifyToken } = require('./verifyToken.js');
 
 const app = express();
-
 
 const corsOption = {
 credentials:true,
@@ -35,17 +15,6 @@ credentials:true,
 optionsSuccessStatus:200,
 };
 
-
-app.use('/graphql', session({
-  resave:true,
-  name:"_gid",
-  secret : SESSION_SECRET,
-  saveUninitialized:false,
-  cookie : {
-    maxAge   : 7*24*60*60*1000,
-  },
-  store : new MySqlStore(options)
-}));
 
 const server = new ApolloServer({
   typeDefs,
@@ -77,12 +46,9 @@ const port = process.env.PORT || 8080;
 
 app.post('/userData' , (req,res,next)=>{
  
-  const logCount = req.query.logCount;
   console.log(req.query);
-  console.log(count);
-
-  if(logCount === 1){
-
+  if(req.query.logCount == 1){
+    console.log("here");
   }
   res.send("success");
   next();

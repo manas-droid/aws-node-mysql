@@ -10,7 +10,6 @@ Query : {
         try {
             const book = new Post();
             const [books , ___] = await book.getPosts();
-            console.log(books);
             return books;
         } catch (e) {
             throw new Error(e);
