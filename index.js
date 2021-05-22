@@ -82,15 +82,14 @@ app.post('/userData' , (req,res,next)=>{
  
   const logCount = req.query.logCount;
   console.log(req.query);
-  console.log(globalEmail);
+  console.log(count);
 
   if(count === 1 && logCount === 1){
     console.log("here");
     count++;
   }else{
-    globalEmail = "";
+    count = 1;
   }
-
   res.send(req.query.logCount);
   next();
 });
