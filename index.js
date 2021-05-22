@@ -80,13 +80,12 @@ const port = process.env.PORT || 8080;
 
 app.post('/userData' , (req,res,next)=>{
  
-  const user = req.query.user;
   const logCount = req.query.logCount;
-  console.log(user.email , user.picture);
-
-  if(globalEmail !== user.email && logCount === 1){
-    console.table(user);
-    globalEmail = user.email;
+  console.log(req.query);
+  
+  if(globalEmail !== req.query.email && logCount === 1){
+    console.table(req.query);
+    globalEmail = req.query.email;
   }else{
     globalEmail = "";
   }
