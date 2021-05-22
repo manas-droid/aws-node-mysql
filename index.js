@@ -82,7 +82,7 @@ app.post('/userData' , (req,res,next)=>{
  
   const user = req.query.user;
   const logCount = req.query.logCount;
-  console.table(user);
+  console.log(user.email , user.picture);
 
   if(globalEmail !== user.email && logCount === 1){
     console.table(user);
