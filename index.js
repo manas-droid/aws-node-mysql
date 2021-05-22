@@ -51,22 +51,19 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: async ({ req })=>{
-    let isAuthenticated = false;
     let user = "";
     const authHeader= req.headers.authorization || "";
     try {
       if(authHeader){
         const token = authHeader.split(" ")[1];
         const payload = await verifyToken(token);
-        isAuthenticated = payload  ? true : false ;
+        user = payload ? payload.sub : ""; 
       }
     } catch (error) {
       console.error(error);
     }
-    
     return {
       req ,
-      isAuthenticated,
       user
     }
   },
@@ -84,13 +81,10 @@ app.post('/userData' , (req,res,next)=>{
   console.log(req.query);
   console.log(count);
 
-  if(count === 1 && logCount === 1){
-    console.log("here");
-    count++;
-  }else{
-    count = 1;
+  if(logCount === 1){
+
   }
-  res.send(req.query.logCount);
+  res.send("success");
   next();
 });
 
@@ -101,6 +95,6 @@ app.get('/userData' , (req,res,next)=>{
 });
 
 
-app.listen({port}, () =>
-console.log(`Server ready at http://localhost:${port}`)
-);
+app.listen({port}, async() =>{
+console.log(`Server ready at http://localhost:${port}`);
+});

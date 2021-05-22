@@ -10,14 +10,14 @@ Query : {
         try {
             const book = new Post();
             const [books , ___] = await book.getPosts();
+            console.log(books);
             return books;
         } catch (e) {
             throw new Error(e);
         }
       },
-      getBookMarks : async(_ ,{postId},{req})=>{
-        const userId = req.session.userId;
-        if(userId){
+      getBookMarks : async(_ ,{postId},{user})=>{
+        if(user){
           try {
             const book = new BookMarks(userId , postId);
             const[check , __] = await book.getBookMark();
@@ -28,11 +28,10 @@ Query : {
         }
         return false;
       },
-      getLikes : async (_ , {postId} , {req})=>{
-        const userId = req.session.userId;
-        if(userId){
+      getLikes : async (_ , {postId} , {user})=>{
+        if(user){
             try {
-              const book = new Likes(userId , postId);
+              const book = new Likes(user , postId);
               const [check , __] = await book.getLikes();
               return check.length > 0;
             } catch (e) {
@@ -60,11 +59,10 @@ Query : {
             throw new Error(e);
           }
       },
-      getYourBookMarks : async (_ , __ , {req})=>{
+      getYourBookMarks : async (_ , __ , {user})=>{
           try {
-            const userId = req.session.userId;
-              if(userId){
-                  const book = new BookMarks(userId);
+              if(user){
+                  const book = new BookMarks(user);
                   const [result] = await book.getYourBookMarks();
                   return result;
               }else{
@@ -74,13 +72,12 @@ Query : {
             throw new Error(error);
           }
       },
-
-      getYourPosts : async (_ , __ , {req})=>{
-            const userId = req.session.userId;
-            if (userId) {
+      
+      getYourPosts : async (_ , __ , {user})=>{
+            if (user) {
               try {
                 const book = new Post();
-                const [result] = await book.getYourPosts(userId);
+                const [result] = await book.getYourPosts(user);
                 return result;
               } catch (error) {
                 throw new Error(error);
@@ -89,7 +86,6 @@ Query : {
             else {
               throw new Error("User not authorised to get YOur Post");
             }
-          
       }
 }
 };

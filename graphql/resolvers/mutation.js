@@ -1,5 +1,3 @@
-const argon = require('argon2');
-const User = require("../../models/User.js");
 const Post = require("../../models/Books.js");
 const Comment = require("../../models/Comments.js");
 
@@ -32,7 +30,7 @@ function checkInputs(description, bookname){
 module.exports = {
 Mutation : {
       s3Signature: async (_ ,{filename , filetype} , {req})=>{
-        //authorise
+
         const s3 = new aws.S3({
           accessKeyId: process.env.AWS_BUCKET_ACCESS_KEY,
           secretAccessKey: process.env.AWS_BUCKET_SECRET,
@@ -48,63 +46,56 @@ Mutation : {
 
         const signedRequest = await s3.getSignedUrl('putObject', s3Params);
         const url = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${filename}`;
-
         return{
         signedRequest ,
         url
         }
 
         },
-        createPost : async (_ , {input:{imageUrl , description , bookname}} , {req })=>{
-        const authorId = req.session.userId;
-        if(authorId){
+      createPost : async (_ , {input:{imageUrl , description , bookname}} , {user })=>{
+        console.log(user);
+        if(user){
           checkInputs(description , bookname);
           try {
-            const book = new Post(authorId , imageUrl , description , bookname);
+            const book = new Post(user , imageUrl , description , bookname);
             await book.createPost();
-
             return {
               ok : true,
             }
           } catch (e) {
-
+            console.error("create post",e);
               return {
                 ok : false,
                 errors : [{path : 'unknown' , message : 'Something went wrong'}]
               };
-
           }
         }
-
-          return {
+        return {
             ok : false,
             errors : [{path : 'user' , message : 'User is not authenticated'}]
           };
         },
-        addBookMark : async (_ , {postId} , {req})=>{
-          const userId = req.session.userId;
-          if(userId){
+        addBookMark : async (_ , {postId} , {user})=>{
+          if(user){
             try {
-              const book = new BookMarks(userId , postId);
-              const[check , ___ ] = await book.getBookMark(userId , postId);
+              const book = new BookMarks(user , postId);
+              const[check , ___ ] = await book.getBookMark();
               if(check.length === 1){
-                    await book.deleteBookMark(userId , postId);
+                    await book.deleteBookMark();
                     return {
                       ok:true
                     };
               }
-              await book.addBookMark(userId , postId);
+              await book.addBookMark();
               return {
                 ok : true,
               };
 
             } catch (e) {
-
               return {
                   ok:false,
                   errors : [{path : 'name' , message: 'Something went wrong'}]
               }
-
             }
           }
               return{
@@ -112,11 +103,10 @@ Mutation : {
                 errors : [{path:'user' , message: 'Username not Authorised'}]
               }
       },
-      addLikes : async (_ , {postId} , {req})=>{
-        const userId = req.session.userId;
-        if(userId){
+      addLikes : async (_ , {postId} , {user})=>{
+        if(user){
             try {
-                const book = new Likes(userId , postId);
+                const book = new Likes(user , postId);
                 const [check , __] = await book.getLikes();
                 if(check.length === 1){
                  await book.deleteLikes();
@@ -142,9 +132,9 @@ Mutation : {
           }
 
       },
-      addPostComment : async (_ , {postId , parentId , comment} , {req})=>{
-        const userId = req.session.userId;
-        if (userId) {
+      addPostComment : async (_ , {postId , parentId , comment} , {user})=>{
+  
+        if (user) {
             if(comment.trim().length === 0){
               return {
                 ok : false,
@@ -152,7 +142,7 @@ Mutation : {
               }
             }
             try {
-                const resultComment = new Comment(postId,userId,parentId,comment);
+                const resultComment = new Comment(postId,user,parentId,comment);
                  await resultComment.createComment();
                  return {
                    ok:true,
@@ -169,11 +159,10 @@ Mutation : {
           errors : [{path:'user' , message: 'Username not Authorised'}]
         }
       },
-      deleteYourPosts : async (_ , {postId} , {req})=>{
-        const userId = req.session.userId;
-        if(userId){
+      deleteYourPosts : async (_ , {postId} , {user})=>{
+        if(user){
             try {
-              const book = new Post(userId);
+              const book = new Post(user);
               const result = await book.deleteYourPosts(postId);
               console.log(result);
             } catch (error) {
@@ -192,16 +181,15 @@ Mutation : {
         }
       }
       ,
-      deleteComment : async (_ , {postId , commentId} , {req})=>{
-        const userId = req.session.userId;
-        if(!userId) {
+      deleteComment : async (_ , {postId , commentId} , {user})=>{
+        if(!user) {
           return {
             ok : false,
             errors : [{path:'user' , message: 'Username not Authorised'}]  
           };
         }
         try {
-          const comment = new Comment(postId , userId);
+          const comment = new Comment(postId , user);
           await comment.deleteComment(commentId);
           return {
             ok:true

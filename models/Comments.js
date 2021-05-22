@@ -23,7 +23,6 @@ module.exports = class Comment{
             return sql.release();
           }
       }
-
       async deleteComment(commentId){
         const sql = await db.getConnection();
         try {
@@ -41,7 +40,7 @@ module.exports = class Comment{
 
       getComments(){
         const query = `
-          SELECT text_comment as comment , username,commentId  FROM Comments as c , Users as u WHERE c.userId = u.userId and postId = ?;
+          SELECT text_comment as comment , nickname , picture ,commentId  FROM Comments as c , Users as u WHERE c.userId = u.userId and postId = ?;
         `;
         return db.query(query , [this.postId]);
       }

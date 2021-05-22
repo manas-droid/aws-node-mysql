@@ -18,7 +18,7 @@ module.exports = class Books{
       getPosts(){
         const query = `
         SELECT  postID as id,post_summary as description,
-        post_bookname as bookname ,post_image as imageUrl , username , post_likeCount as likeCount
+        post_bookname as bookname ,post_image as imageUrl , nickname , post_likeCount as likeCount
         FROM Posts as p , Users as u
         WHERE p.post_authorID = u.userId;
         `;
@@ -31,7 +31,7 @@ module.exports = class Books{
         const query = `
         SELECT  postID as id,post_summary as description,
         post_commentCount as commentCount,
-        post_bookname as bookname ,post_image as imageUrl , username
+        post_bookname as bookname ,post_image as imageUrl , nickname
         FROM Posts as p , Users as u
         WHERE p.post_authorID = u.userId and postID = ?;
         `;

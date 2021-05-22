@@ -21,7 +21,7 @@ type Post{
   imageUrl : String
   description:String!
   bookname:String!
-  username:String!
+  nickname:String!
   likeCount:Int!
 }
 
@@ -30,14 +30,15 @@ type SinglePost{
   imageUrl : String
   description:String!
   bookname:String!
-  username:String!
+  nickname:String!
   commentCount:Int!
 }
 
 type Comment{
   commentId:Int!
   comment:String!
-  username:String!
+  nickname:String
+  picture:String
 }
 
 type Error{
