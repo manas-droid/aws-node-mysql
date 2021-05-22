@@ -5,7 +5,7 @@ const MySqlStore = require('express-mysql-session')(session);
 const SESSION_SECRET = "secret";
 const {ApolloServer} =  require("apollo-server-express");
 require("dotenv").config();
-let globalEmail = "";
+let count = 1;
 
 const options = {
       host: process.env.AWS_RDS_HOST_NAME,
@@ -84,9 +84,9 @@ app.post('/userData' , (req,res,next)=>{
   console.log(req.query);
   console.log(globalEmail);
 
-  if(globalEmail !== req.query.email.toString() && logCount === 1){
+  if(count === 1 && logCount === 1){
     console.log("here");
-    globalEmail = req.query.email;
+    count++;
   }else{
     globalEmail = "";
   }
