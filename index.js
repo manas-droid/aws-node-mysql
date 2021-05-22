@@ -82,6 +82,7 @@ app.post('/userData' , (req,res,next)=>{
  
   const user = req.query.user;
   const logCount = req.query.logCount;
+  console.table(user);
 
   if(globalEmail !== user.email && logCount === 1){
     console.table(user);
