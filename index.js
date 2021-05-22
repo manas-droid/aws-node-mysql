@@ -82,9 +82,9 @@ app.post('/userData' , (req,res,next)=>{
  
   const logCount = req.query.logCount;
   console.log(req.query);
-  
+
   if(globalEmail !== req.query.email && logCount === 1){
-    console.table(req.query);
+    console.log("here");
     globalEmail = req.query.email;
   }else{
     globalEmail = "";
